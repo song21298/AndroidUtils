@@ -1,4 +1,4 @@
-package com.example.instrument.androidutils;
+package com.example.instrument.multipurpose;
 
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 
 
 public class GetJsonDataUtil {
-
 
     public String getJson(Context context,String fileName) {
 

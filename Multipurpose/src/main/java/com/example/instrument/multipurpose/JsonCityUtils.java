@@ -1,109 +1,54 @@
-package com.example.instrument.androidutils;
+package com.example.instrument.multipurpose;
 
-import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Color;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
 import com.bigkoo.pickerview.listener.OnOptionsSelectListener;
 import com.bigkoo.pickerview.view.OptionsPickerView;
-import com.example.instrument.androidutils.bean.JsonBean;
-import com.example.instrument.multipurpose.GetJsonDataUtil;
 import com.google.gson.Gson;
 
 import org.json.JSONArray;
 
 import java.util.ArrayList;
 
-public class JsonDataActivity extends AppCompatActivity implements View.OnClickListener {
+/**
+ * Created by Song on 2018/4/18 0018.
+ */
 
+public class JsonCityUtils {
 
+    public String cityInfo;
     private ArrayList<JsonBean> options1Items = new ArrayList<>();
     private ArrayList<ArrayList<String>> options2Items = new ArrayList<>();
     private ArrayList<ArrayList<ArrayList<String>>> options3Items = new ArrayList<>();
-    private Thread thread;
-    private static final int MSG_LOAD_DATA = 0x0001;
-    private static final int MSG_LOAD_SUCCESS = 0x0002;
-    private static final int MSG_LOAD_FAILED = 0x0003;
+    public static JsonCityUtils instance = new JsonCityUtils();
 
-    private boolean isLoaded = false;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_json_data);
-        initView();
-    }
-
-    @SuppressLint("HandlerLeak")
-    private Handler mHandler = new Handler() {
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case MSG_LOAD_DATA:
-                    if (thread == null) {//如果已创建就不再重新创建子线程了
-
-                        Toast.makeText(JsonDataActivity.this, "Begin Parse Data", Toast.LENGTH_SHORT).show();
-                        thread = new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                // 子线程中解析省市区数据
-                                initJsonData();
-                            }
-                        });
-                        thread.start();
-                    }
-                    break;
-
-                case MSG_LOAD_SUCCESS:
-                    Toast.makeText(JsonDataActivity.this, "Parse Succeed", Toast.LENGTH_SHORT).show();
-                    isLoaded = true;
-                    break;
-
-                case MSG_LOAD_FAILED:
-                    Toast.makeText(JsonDataActivity.this, "Parse Failed", Toast.LENGTH_SHORT).show();
-                    break;
-            }
-        }
-    };
-
-    private void initView() {
-        findViewById(R.id.btn_data).setOnClickListener(this);
-        findViewById(R.id.btn_show).setOnClickListener(this);
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btn_data:
-                mHandler.sendEmptyMessage(MSG_LOAD_DATA);
-                break;
-            case R.id.btn_show:
-                if (isLoaded) {
-                    showPickerView();
-                } else {
-                    Toast.makeText(JsonDataActivity.this, "Please waiting until the data is parsed", Toast.LENGTH_SHORT).show();
-                }
-                break;
-        }
+    public static JsonCityUtils getInstance() {
+        return instance;
     }
 
 
-    private void showPickerView() {// 弹出选择器
+    public JsonCityUtils() {
+    }
 
-        OptionsPickerView pvOptions = new OptionsPickerBuilder(this, new OnOptionsSelectListener() {
+    public void showPickerView(Context context, final View view) {// 弹出选择器
+
+        OptionsPickerView pvOptions = new OptionsPickerBuilder(context, new OnOptionsSelectListener() {
             @Override
             public void onOptionsSelect(int options1, int options2, int options3, View v) {
                 //返回的分别是三个级别的选中位置
                 String tx = options1Items.get(options1).getPickerViewText() +
                         options2Items.get(options1).get(options2) +
                         options3Items.get(options1).get(options2).get(options3);
+                cityInfo = tx;
+                if (view != null) {
+                    TextView textView = (TextView) view;
+                    textView.setText(tx);
+                }
 
-                Toast.makeText(JsonDataActivity.this, tx, Toast.LENGTH_SHORT).show();
             }
         })
 
@@ -119,14 +64,15 @@ public class JsonDataActivity extends AppCompatActivity implements View.OnClickL
         pvOptions.show();
     }
 
-    private void initJsonData() {//解析数据
+    //解析数据 需要在显示之前解析
+    public void initJsonData(Context context) {
 
         /**
          * 注意：assets 目录下的Json文件仅供参考，实际使用可自行替换文件
          * 关键逻辑在于循环体
          *
          * */
-        String JsonData = new GetJsonDataUtil().getJson(this, "province.json");//获取assets目录下的json文件数据
+        String JsonData = new GetJsonDataUtil().getJson(context, "province.json");//获取assets目录下的json文件数据
 
         ArrayList<JsonBean> jsonBean = parseData(JsonData);//用Gson 转成实体
 
@@ -167,11 +113,7 @@ public class JsonDataActivity extends AppCompatActivity implements View.OnClickL
              */
             options3Items.add(Province_AreaList);
         }
-
-        mHandler.sendEmptyMessage(MSG_LOAD_SUCCESS);
-
     }
-
 
     public ArrayList<JsonBean> parseData(String result) {//Gson 解析
         ArrayList<JsonBean> detail = new ArrayList<>();
@@ -184,17 +126,7 @@ public class JsonDataActivity extends AppCompatActivity implements View.OnClickL
             }
         } catch (Exception e) {
             e.printStackTrace();
-            mHandler.sendEmptyMessage(MSG_LOAD_FAILED);
         }
         return detail;
-    }
-
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (mHandler != null) {
-            mHandler.removeCallbacksAndMessages(null);
-        }
     }
 }

@@ -30,6 +30,8 @@ import com.bigkoo.pickerview.view.OptionsPickerView;
 import com.bigkoo.pickerview.view.TimePickerView;
 import com.example.instrument.androidutils.bean.CardBean;
 import com.example.instrument.androidutils.bean.ProvinceBean;
+import com.example.instrument.multipurpose.DateViewUtils;
+import com.example.instrument.multipurpose.JsonCityUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -58,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        DateViewUtils.getInstance().initTimePicker(this, 0, false, false, -1, false, 0);
         //等数据加载完毕再初始化并显示Picker,以免还未加载完数据就显示,造成APP崩溃。
         getOptionData();
 
@@ -85,17 +87,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         findViewById(R.id.btn_GotoJsonData).setOnClickListener(this);
         findViewById(R.id.btn_lunar).setOnClickListener(this);
+
+
     }
 
 
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.btn_Time && pvTime != null) {
-            // pvTime.setDate(Calendar.getInstance());
-           /* pvTime.show(); //show timePicker*/
-            pvTime.show(v);//弹出时间选择器，传递参数过去，回调的时候则可以绑定此view
+            DateViewUtils.getInstance().setCustomFormat("yyyy-MM-dd");
+            DateViewUtils.getInstance().Show(v);
+
         } else if (v.getId() == R.id.btn_Options && pvOptions != null) {
-            pvOptions.show(); //弹出条件选择器
+            //pvOptions.show(); //弹出条件选择器
+            JsonCityUtils.getInstance().initJsonData(this);
+            JsonCityUtils.getInstance().showPickerView(this, v);
         } else if (v.getId() == R.id.btn_CustomOptions && pvCustomOptions != null) {
             pvCustomOptions.show(); //弹出自定义条件选择器
         } else if (v.getId() == R.id.btn_CustomTime && pvCustomTime != null) {
@@ -103,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (v.getId() == R.id.btn_no_linkage && pvNoLinkOptions != null) {//不联动数据选择器
             pvNoLinkOptions.show();
         } else if (v.getId() == R.id.btn_GotoJsonData) {//跳转到 省市区解析示例页面
-            startActivity(new Intent(MainActivity.this, JsonDataActivity.class));
+            //startActivity(new Intent(MainActivity.this, JsonDataActivity.class));
         } else if (v.getId() == R.id.btn_fragment) {//跳转到 fragment
             startActivity(new Intent(MainActivity.this, FragmentTestActivity.class));
         } else if (v.getId() == R.id.btn_lunar) {
@@ -500,5 +506,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         computer.add("HP");
     }
 
-
+    @Override
+    public void onBackPressed() {
+    }
 }

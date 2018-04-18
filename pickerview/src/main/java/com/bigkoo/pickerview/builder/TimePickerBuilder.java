@@ -180,6 +180,7 @@ public class TimePickerBuilder {
 
     /**
      * //显示时的外部背景色颜色,默认是灰色
+     * 只能在非dialog模式下使用
      *
      * @param backgroundId
      */
