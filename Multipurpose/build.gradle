@@ -1,8 +1,8 @@
 apply plugin: 'com.android.library'
-
+apply plugin: 'com.github.dcendents.android-maven'
 android {
     compileSdkVersion 26
-
+    buildToolsVersion "26.0.2"
 
 
     defaultConfig {
@@ -23,12 +23,17 @@ android {
     }
 
 }
-
+allprojects {
+    tasks.withType(Javadoc) {//兼容中文字符
+        options{
+            encoding "UTF-8"
+            charSet 'UTF-8'
+            links "http://docs.oracle.com/javase/7/docs/api"
+        }
+    }
+}
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    testImplementation 'junit:junit:4.12'
     compile 'com.google.code.gson:gson:2.7'
     compile project(path: ':pickerview')
 }
